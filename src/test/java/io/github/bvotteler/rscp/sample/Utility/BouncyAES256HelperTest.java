@@ -1,6 +1,6 @@
 package io.github.bvotteler.rscp.sample.Utility;
 
-import com.bvotteler.rscp.util.ByteUtils;
+import io.github.bvotteler.rscp.util.ByteUtils;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

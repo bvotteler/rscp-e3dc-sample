@@ -2,7 +2,7 @@ package io.github.bvotteler.rscp.sample;
 
 import io.github.bvotteler.rscp.sample.Utility.AES256Helper;
 import io.github.bvotteler.rscp.sample.Utility.BouncyAES256Helper;
-import com.bvotteler.rscp.RSCPFrame;
+import io.github.bvotteler.rscp.RSCPFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

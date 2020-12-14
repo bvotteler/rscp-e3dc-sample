@@ -1,10 +1,10 @@
 package io.github.bvotteler.rscp.sample;
 
-import com.bvotteler.rscp.RSCPData;
-import com.bvotteler.rscp.RSCPDataType;
-import com.bvotteler.rscp.RSCPFrame;
-import com.bvotteler.rscp.RSCPTag;
-import com.bvotteler.rscp.util.ByteUtils;
+import io.github.bvotteler.rscp.RSCPData;
+import io.github.bvotteler.rscp.RSCPDataType;
+import io.github.bvotteler.rscp.RSCPFrame;
+import io.github.bvotteler.rscp.RSCPTag;
+import io.github.bvotteler.rscp.util.ByteUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
