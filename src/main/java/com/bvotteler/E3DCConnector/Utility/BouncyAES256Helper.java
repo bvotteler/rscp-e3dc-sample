@@ -14,128 +14,128 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 public class BouncyAES256Helper implements AES256Helper {
-	private byte[] key;
-	private byte[] ivEnc;
-	private byte[] ivDec;
-	private final int messageBlockSize = 256;
-	private static Logger logger = LoggerFactory.getLogger(BouncyAES256Helper.class);
+    private static Logger logger = LoggerFactory.getLogger(BouncyAES256Helper.class);
+    private final int messageBlockSize = 256;
+    private byte[] key;
+    private byte[] ivEnc;
+    private byte[] ivDec;
 
-	public static BouncyAES256Helper createBouncyAES256Helper(String key) {
-		BouncyAES256Helper bouncyAES256Helper = new BouncyAES256Helper();
-		bouncyAES256Helper.initializeFromKey(key);
-		return bouncyAES256Helper;
-	}
+    public static BouncyAES256Helper createBouncyAES256Helper(String key) {
+        BouncyAES256Helper bouncyAES256Helper = new BouncyAES256Helper();
+        bouncyAES256Helper.initializeFromKey(key);
+        return bouncyAES256Helper;
+    }
 
-	private void initializeFromKey(String key) {
-		byte[] aesKey = new byte[32];
-		byte[] tmp = (key != null) ? key.getBytes() : null;
-		// copy password into key
-		logger.debug("Setting up encryption password...");
-		for (int i = 0; i < aesKey.length; i++) {
-			if(i < tmp.length) { // got a byte from password, copy it
-				aesKey[i] = tmp[i];
-			} else { // password bytes used up, fill with 0xFF
-				aesKey[i] = (byte)0xFF;
-			}
-		}
+    private void initializeFromKey(String key) {
+        byte[] aesKey = new byte[32];
+        byte[] tmp = (key != null) ? key.getBytes() : null;
+        // copy password into key
+        logger.debug("Setting up encryption password...");
+        for (int i = 0; i < aesKey.length; i++) {
+            if (i < tmp.length) { // got a byte from password, copy it
+                aesKey[i] = tmp[i];
+            } else { // password bytes used up, fill with 0xFF
+                aesKey[i] = (byte) 0xFF;
+            }
+        }
 
-		logger.debug("Setting up initialization vectors... ");
-		// initialize IV with 0xFF for first contact
-		byte[] initializationVectorEncrypt = new byte[32];
-		byte[] initializationVectorDecrypt = new byte[32];
-		Arrays.fill(initializationVectorEncrypt, (byte)0xFF);
-		Arrays.fill(initializationVectorDecrypt, (byte)0xFF);
+        logger.debug("Setting up initialization vectors... ");
+        // initialize IV with 0xFF for first contact
+        byte[] initializationVectorEncrypt = new byte[32];
+        byte[] initializationVectorDecrypt = new byte[32];
+        Arrays.fill(initializationVectorEncrypt, (byte) 0xFF);
+        Arrays.fill(initializationVectorDecrypt, (byte) 0xFF);
 
-		this.init(aesKey, initializationVectorEncrypt, initializationVectorDecrypt);
-	}
+        this.init(aesKey, initializationVectorEncrypt, initializationVectorDecrypt);
+    }
 
-	public void init(byte[] key, byte[] ivEnc, byte[] ivDec) {
-		this.key = null;
-		this.ivEnc = null;
-		this.ivDec = null;
-		if (key.length != 32) {
-			throw new IllegalArgumentException("Key has to be 32 bytes long.");
-		}
-		
-		if(ivEnc.length != 32)
-			throw new IllegalArgumentException("IV has to be 32 bytes long.");
-		
-		if(ivDec.length != 32)
-			throw new IllegalArgumentException("IV has to be 32 bytes long.");
-		
-		this.key = new byte[32];
-		System.arraycopy(key, 0, this.key, 0, key.length);
+    public void init(byte[] key, byte[] ivEnc, byte[] ivDec) {
+        this.key = null;
+        this.ivEnc = null;
+        this.ivDec = null;
+        if (key.length != 32) {
+            throw new IllegalArgumentException("Key has to be 32 bytes long.");
+        }
 
-		this.ivEnc = new byte[32];
-		System.arraycopy(ivEnc, 0, this.ivEnc, 0, ivEnc.length);
+        if (ivEnc.length != 32)
+            throw new IllegalArgumentException("IV has to be 32 bytes long.");
 
-		this.ivDec = new byte[32];
-		System.arraycopy(ivEnc, 0, this.ivDec, 0, ivDec.length);
-}
+        if (ivDec.length != 32)
+            throw new IllegalArgumentException("IV has to be 32 bytes long.");
 
-	public byte[] encrypt(byte[] message) {
-		if(this.key == null || this.ivEnc == null) {
-			throw new IllegalStateException("Both key and IV have to be defined prior to encryption.");
-		}
+        this.key = new byte[32];
+        System.arraycopy(key, 0, this.key, 0, key.length);
 
-		try {
-			byte[] sessionKey = this.key;
-			byte[] iv = this.ivEnc;
+        this.ivEnc = new byte[32];
+        System.arraycopy(ivEnc, 0, this.ivEnc, 0, ivEnc.length);
 
-			PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(
-					new CBCBlockCipher(new RijndaelEngine(messageBlockSize)), new ZeroBytePadding());
+        this.ivDec = new byte[32];
+        System.arraycopy(ivEnc, 0, this.ivDec, 0, ivDec.length);
+    }
 
-			int keySize = messageBlockSize / 8;
+    public byte[] encrypt(byte[] message) {
+        if (this.key == null || this.ivEnc == null) {
+            throw new IllegalStateException("Both key and IV have to be defined prior to encryption.");
+        }
 
-			CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(sessionKey, 0, keySize), iv, 0, keySize);
+        try {
+            byte[] sessionKey = this.key;
+            byte[] iv = this.ivEnc;
 
-			cipher.init(true, ivAndKey);
-			byte[] encrypted = new byte[cipher.getOutputSize(message.length)];
-			int oLen = cipher.processBytes(message, 0, message.length, encrypted, 0);
+            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(
+                    new CBCBlockCipher(new RijndaelEngine(messageBlockSize)), new ZeroBytePadding());
 
-			cipher.doFinal(encrypted, oLen);
+            int keySize = messageBlockSize / 8;
 
-			// update IV
-			System.arraycopy(encrypted, encrypted.length - this.ivEnc.length, this.ivEnc, 0, this.ivEnc.length);
+            CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(sessionKey, 0, keySize), iv, 0, keySize);
 
-			return encrypted;
-		} catch (InvalidCipherTextException e) {
-			logger.error("Exception encountered during encryption.", e);
-			throw new RuntimeException(e);
-		}
-	}
+            cipher.init(true, ivAndKey);
+            byte[] encrypted = new byte[cipher.getOutputSize(message.length)];
+            int oLen = cipher.processBytes(message, 0, message.length, encrypted, 0);
 
-	public byte[] decrypt(byte[] encryptedMessage) {
-		if(this.key == null || this.ivDec == null) {
-			throw new IllegalStateException("Both key and IV have to be defined prior to decryption.");
-		}
+            cipher.doFinal(encrypted, oLen);
 
-		if(encryptedMessage == null)
-			return null;
+            // update IV
+            System.arraycopy(encrypted, encrypted.length - this.ivEnc.length, this.ivEnc, 0, this.ivEnc.length);
 
-		try {
-			byte[] sessionKey = this.key;
-			byte[] iv = this.ivDec;
+            return encrypted;
+        } catch (InvalidCipherTextException e) {
+            logger.error("Exception encountered during encryption.", e);
+            throw new RuntimeException(e);
+        }
+    }
 
-			PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(
-					new CBCBlockCipher(new RijndaelEngine(messageBlockSize)), new ZeroBytePadding());
+    public byte[] decrypt(byte[] encryptedMessage) {
+        if (this.key == null || this.ivDec == null) {
+            throw new IllegalStateException("Both key and IV have to be defined prior to decryption.");
+        }
 
-			int keySize = messageBlockSize / 8;
+        if (encryptedMessage == null)
+            return null;
 
-			CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(sessionKey, 0, keySize), iv, 0, keySize);
+        try {
+            byte[] sessionKey = this.key;
+            byte[] iv = this.ivDec;
 
-			cipher.init(false, ivAndKey);
-			byte[] decrypted = new byte[cipher.getOutputSize(encryptedMessage.length)];
-			int oLen = cipher.processBytes(encryptedMessage, 0, encryptedMessage.length, decrypted, 0);
-			cipher.doFinal(decrypted, oLen);
+            PaddedBufferedBlockCipher cipher = new PaddedBufferedBlockCipher(
+                    new CBCBlockCipher(new RijndaelEngine(messageBlockSize)), new ZeroBytePadding());
 
-			// update IV
-			System.arraycopy(decrypted, decrypted.length - this.ivDec.length, this.ivDec, 0, this.ivDec.length);
+            int keySize = messageBlockSize / 8;
 
-			return decrypted;
-		} catch (InvalidCipherTextException e) {
-			logger.error("Exception encountered during decryption.", e);
-			throw new RuntimeException(e);
-		}
-	}
+            CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(sessionKey, 0, keySize), iv, 0, keySize);
+
+            cipher.init(false, ivAndKey);
+            byte[] decrypted = new byte[cipher.getOutputSize(encryptedMessage.length)];
+            int oLen = cipher.processBytes(encryptedMessage, 0, encryptedMessage.length, decrypted, 0);
+            cipher.doFinal(decrypted, oLen);
+
+            // update IV
+            System.arraycopy(decrypted, decrypted.length - this.ivDec.length, this.ivDec, 0, this.ivDec.length);
+
+            return decrypted;
+        } catch (InvalidCipherTextException e) {
+            logger.error("Exception encountered during decryption.", e);
+            throw new RuntimeException(e);
+        }
+    }
 }
