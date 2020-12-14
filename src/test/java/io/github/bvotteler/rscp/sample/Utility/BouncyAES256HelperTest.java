@@ -1,4 +1,4 @@
-package com.bvotteler.E3DCConnector.Utility;
+package io.github.bvotteler.rscp.sample.Utility;
 
 import com.bvotteler.rscp.util.ByteUtils;
 import org.junit.Test;

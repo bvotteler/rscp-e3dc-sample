@@ -1,4 +1,4 @@
-package com.bvotteler.E3DCConnector;
+package io.github.bvotteler.rscp.sample;
 
 import com.bvotteler.rscp.RSCPData;
 import com.bvotteler.rscp.RSCPDataType;

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.bvotteler</groupId>
+    <groupId>io.github.bvotteler</groupId>
     <artifactId>e3dc-rscp-sample</artifactId>
     <version>0.9.0</version>
 
@@ -38,7 +38,7 @@
             <version>0.10.3</version>
         </dependency>
         <dependency>
-            <groupId>com.bvotteler</groupId>
+            <groupId>io.github.bvotteler</groupId>
             <artifactId>e3dc-rscp</artifactId>
             <version>0.9.0</version>
         </dependency>

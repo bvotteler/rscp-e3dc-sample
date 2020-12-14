@@ -1,7 +1,7 @@
-package com.bvotteler.E3DCConnector;
+package io.github.bvotteler.rscp.sample;
 
-import com.bvotteler.E3DCConnector.Utility.AES256Helper;
-import com.bvotteler.E3DCConnector.Utility.BouncyAES256Helper;
+import io.github.bvotteler.rscp.sample.Utility.AES256Helper;
+import io.github.bvotteler.rscp.sample.Utility.BouncyAES256Helper;
 import com.bvotteler.rscp.RSCPFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

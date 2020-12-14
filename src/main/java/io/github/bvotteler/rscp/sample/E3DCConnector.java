@@ -1,4 +1,4 @@
-package com.bvotteler.E3DCConnector;
+package io.github.bvotteler.rscp.sample;
 
 import io.vavr.control.Either;
 import org.slf4j.Logger;

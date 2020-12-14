@@ -1,4 +1,4 @@
-package com.bvotteler.E3DCConnector.Utility;
+package io.github.bvotteler.rscp.sample.Utility;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.InvalidCipherTextException;
