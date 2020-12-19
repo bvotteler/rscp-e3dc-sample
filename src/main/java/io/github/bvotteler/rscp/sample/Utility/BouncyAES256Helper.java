@@ -27,8 +27,11 @@ public class BouncyAES256Helper implements AES256Helper {
     }
 
     private void initializeFromKey(String key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key must not be null");
+        }
         byte[] aesKey = new byte[32];
-        byte[] tmp = (key != null) ? key.getBytes() : null;
+        byte[] tmp = key.getBytes();
         // copy password into key
         logger.debug("Setting up encryption password...");
         for (int i = 0; i < aesKey.length; i++) {

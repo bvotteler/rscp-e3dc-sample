@@ -12,6 +12,9 @@ import java.nio.ByteOrder;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 
 public class E3DCSampleRequests {
@@ -113,20 +116,16 @@ public class E3DCSampleRequests {
         // check the authentication level and return that
         // return -1 if unable to retrieve authentication level
 
-        // we need a valid frame
-        if (!isAuthenticationRequestReplyFrameComplete(frame))
-            return -1;
+        RSCPFrame rscpFrame = RSCPFrame.builder().buildFromRawBytes(frame);
+        List<RSCPData> dataList = rscpFrame.getData();
+        // find authentication data in the frame
+        Optional<RSCPData> authenticationData = dataList.stream()
+                .filter(data -> data.getDataTag() == RSCPTag.TAG_RSCP_AUTHENTICATION)
+                .findFirst();
 
-        // find the position of the tag
-        int tagPosition = ByteUtils.arrayPosition(frame, ByteUtils.hexStringToByteArray("0100800003"));
-
-        // get length (index of byte: tagPosition + 4 (tag) + 1 (type) + 2 (length))
-        byte[] authLevelInBytes = new byte[Short.BYTES]; // initialized with 00
-        authLevelInBytes[Short.BYTES - 1] = frame[tagPosition + 4 + 1 + 2]; // set last byte (big endian style)
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Short.BYTES)
-                .order(ByteOrder.BIG_ENDIAN)
-                .put(authLevelInBytes);
-        byteBuffer.rewind();
-        return byteBuffer.getShort();
+        // read value as short (it is stored as UCHAR8 internally)
+        return authenticationData
+                .flatMap(RSCPData::getValueAsShort)
+                .orElseGet(() -> (short) -1);
     }
 }
