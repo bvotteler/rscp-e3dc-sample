@@ -7,6 +7,8 @@ import io.github.bvotteler.rscp.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -121,6 +123,10 @@ public class E3DCSampleRequests {
         // get length (index of byte: tagPosition + 4 (tag) + 1 (type) + 2 (length))
         byte[] authLevelInBytes = new byte[Short.BYTES]; // initialized with 00
         authLevelInBytes[Short.BYTES - 1] = frame[tagPosition + 4 + 1 + 2]; // set last byte (big endian style)
-        return ByteUtils.bytesToShort(authLevelInBytes);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(Short.BYTES)
+                .order(ByteOrder.BIG_ENDIAN)
+                .put(authLevelInBytes);
+        byteBuffer.rewind();
+        return byteBuffer.getShort();
     }
 }

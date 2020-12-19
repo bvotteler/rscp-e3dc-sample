@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 public class BouncyAES256Helper implements AES256Helper {
-    private static Logger logger = LoggerFactory.getLogger(BouncyAES256Helper.class);
+    private static final Logger logger = LoggerFactory.getLogger(BouncyAES256Helper.class);
     private final int messageBlockSize = 256;
     private byte[] key;
     private byte[] ivEnc;
