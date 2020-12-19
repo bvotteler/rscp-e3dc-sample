@@ -3,6 +3,7 @@ package io.github.bvotteler.rscp.sample.Utility;
 import io.github.bvotteler.rscp.util.ByteUtils;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
@@ -34,12 +35,26 @@ public class BouncyAES256HelperTest {
         byte[] decrypted = aes.decrypt(encrypted);
         String decryptedHex = ByteUtils.byteArrayToHexString(decrypted);
 
-        assertThat(decryptedHex, startsWith(input));
+        assertThat(decryptedHex, equalTo(input));
+    }
 
-        // decrypted contains filer bytes, all filler hex chars should read '0'
-        String fillerHex = decryptedHex.substring(input.length());
-        long distinctChars = fillerHex.chars().distinct().count();
-        assertThat(distinctChars, is(1L));
-        assertThat(fillerHex.charAt(0), is('0'));
+    @Test
+    public void encryptDecryptMultipleRoundtripsWork() {
+        AES256Helper aes = BouncyAES256Helper.createBouncyAES256Helper("super secret");
+        String input = "e3 dc 00 11 51 77 05 58 00 00 00 00 00 66 64 2b 3e 00 01 00 00 00 0e 37 00 02 00 00 00 0d 1e 00 77 6f 6c 66 72 61 6d 2e 76 6f 74 74 65 6c 65 72 40 76 6f 74 74 65 6c 65 72 2e 69 6e 66 6f 03 00 00 00 0d 0b 00 4b 68 61 6e 46 6c 61 73 68 39 35 d9 97 1a eb".replaceAll("\\s+", "");
+
+        byte[] encrypted = aes.encrypt(ByteUtils.hexStringToByteArray(input));
+        byte[] decrypted = aes.decrypt(encrypted);
+
+        // looks silly, but helps validate that the initialization vectors are
+        // updated correctly for subsequent encrypt/decrypt operations
+        for (int i =0; i < 5; i++) {
+            encrypted = aes.encrypt(decrypted);
+            decrypted = aes.decrypt(encrypted);
+        }
+
+        String decryptedHex = ByteUtils.byteArrayToHexString(decrypted);
+
+        assertThat(decryptedHex, equalTo(input));
     }
 }

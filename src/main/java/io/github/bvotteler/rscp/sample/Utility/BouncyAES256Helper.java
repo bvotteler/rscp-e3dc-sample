@@ -129,8 +129,16 @@ public class BouncyAES256Helper implements AES256Helper {
             int oLen = cipher.processBytes(encryptedMessage, 0, encryptedMessage.length, decrypted, 0);
             cipher.doFinal(decrypted, oLen);
 
-            // update IV
-            System.arraycopy(decrypted, decrypted.length - this.ivDec.length, this.ivDec, 0, this.ivDec.length);
+            // Strip zeroes from decrypted message
+            int lastZeroIdx = decrypted.length - 1;
+            while (lastZeroIdx >= 0 && decrypted[lastZeroIdx] == 0)
+            {
+                --lastZeroIdx;
+            }
+            decrypted = Arrays.copyOf(decrypted, lastZeroIdx + 1);
+
+            // update IV with the last bytes from the encrypted message
+            System.arraycopy(encryptedMessage, encryptedMessage.length - this.ivDec.length, this.ivDec, 0, this.ivDec.length);
 
             return decrypted;
         } catch (InvalidCipherTextException e) {
