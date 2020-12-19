@@ -1,15 +1,15 @@
 package io.github.bvotteler.rscp.sample;
 
+import io.github.bvotteler.rscp.RSCPFrame;
 import io.github.bvotteler.rscp.sample.Utility.AES256Helper;
 import io.github.bvotteler.rscp.sample.Utility.BouncyAES256Helper;
-import io.github.bvotteler.rscp.RSCPFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.Socket;
 
 public class E3DCConnectorMain {
-    private static Logger logger = LoggerFactory.getLogger(E3DCConnectorMain.class);
+    private static final Logger logger = LoggerFactory.getLogger(E3DCConnectorMain.class);
 
     public static void main(String[] args) {
         // sample connection details, update to play
@@ -56,7 +56,7 @@ public class E3DCConnectorMain {
                     .peek(bytesSent -> logger.debug("Request data: Sent " + bytesSent + " bytes to server."))
                     .flatMap(bytesSent -> E3DCConnector.receiveFrameFromServer(finalSocket, aesHelper::decrypt))
                     .peek(decryptedBytesReceived -> logger.debug("Request data: Received " + decryptedBytesReceived.length + " decrypted bytes from server."))
-                    .map(decryptedBytesReceived -> RSCPFrame.of(decryptedBytesReceived))
+                    .map(decryptedBytesReceived -> RSCPFrame.builder().buildFromRawBytes(decryptedBytesReceived))
                     .fold(
                             ex -> {
                                 logger.error("Error while trying to get data from server.", ex);

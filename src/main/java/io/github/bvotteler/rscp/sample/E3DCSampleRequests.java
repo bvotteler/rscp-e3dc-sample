@@ -1,37 +1,42 @@
 package io.github.bvotteler.rscp.sample;
 
 import io.github.bvotteler.rscp.RSCPData;
-import io.github.bvotteler.rscp.RSCPDataType;
 import io.github.bvotteler.rscp.RSCPFrame;
 import io.github.bvotteler.rscp.RSCPTag;
 import io.github.bvotteler.rscp.util.ByteUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 
 
 public class E3DCSampleRequests {
-    private static Logger logger = LoggerFactory.getLogger(E3DCSampleRequests.class);
+    private static final Logger logger = LoggerFactory.getLogger(E3DCSampleRequests.class);
 
     public static byte[] buildAuthenticationMessage(String user, String password) {
-        RSCPData authUser = new RSCPData();
-        authUser.setDataTag(RSCPTag.TAG_RSCP_AUTHENTICATION_USER);
-        authUser.setData(user);
-        RSCPData authPwd = new RSCPData();
-        authPwd.setDataTag(RSCPTag.TAG_RSCP_AUTHENTICATION_PASSWORD);
-        authPwd.setData(password);
+        RSCPData authUser = RSCPData.builder()
+                .tag(RSCPTag.TAG_RSCP_AUTHENTICATION_USER)
+                .stringValue(user)
+                .build();
 
-        RSCPData authContainer = new RSCPData();
-        authContainer.setDataTag(RSCPTag.TAG_RSCP_REQ_AUTHENTICATION);
-        authContainer.setData(authUser);
-        authContainer.appendData(authPwd);
+        RSCPData authPwd = RSCPData.builder()
+                .tag(RSCPTag.TAG_RSCP_AUTHENTICATION_PASSWORD)
+                .stringValue(password)
+                .build();
 
-        RSCPFrame authFrame = new RSCPFrame();
-        authFrame.appendData(authContainer);
-        return authFrame.getAsBytes(true);
+        RSCPData authContainer = RSCPData.builder()
+                .tag(RSCPTag.TAG_RSCP_REQ_AUTHENTICATION)
+                .containerValues(Arrays.asList(authUser, authPwd))
+                .build();
+
+        RSCPFrame authFrame = RSCPFrame.builder()
+                .timestamp(Instant.now())
+                .addData(authContainer)
+                .build();
+
+        return authFrame.getAsByteArray();
     }
 
     /**
@@ -43,55 +48,35 @@ public class E3DCSampleRequests {
      * @return A byte array ready to be encrypted and sent.
      */
     public static byte[] buildSampleRequestFrame(long startEpochSeconds, long intervalSeconds, int numberOfIntervals) {
-        // build request starting with a container
-        RSCPData reqContainer = new RSCPData();
-        reqContainer.setDataTag(RSCPTag.TAG_DB_REQ_HISTORY_DATA_DAY);
-        reqContainer.setDataType(RSCPDataType.CONTAINER);
-
         // build parameters
-        RSCPData reqTimeStart = new RSCPData();
-        reqTimeStart.setDataTag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_START);
-        reqTimeStart.setTimeStampData(startEpochSeconds, 0);
+        RSCPData reqTimeStart = RSCPData.builder()
+                .tag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_START)
+                .timestampValue(Instant.ofEpochSecond(startEpochSeconds))
+                .build();
 
-        RSCPData reqInterval = new RSCPData();
-        reqInterval.setDataTag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_INTERVAL);
-        reqInterval.setTimeStampData(intervalSeconds, 0);
+        RSCPData reqInterval = RSCPData.builder()
+                .tag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_INTERVAL)
+                .timestampValue(Duration.ofSeconds(intervalSeconds))
+                .build();
 
-        RSCPData reqTimeSpan = new RSCPData();
-        reqTimeSpan.setDataTag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_SPAN);
-        reqTimeSpan.setTimeStampData(intervalSeconds * numberOfIntervals, 0);
+        RSCPData reqTimeSpan = RSCPData.builder()
+                .tag(RSCPTag.TAG_DB_REQ_HISTORY_TIME_SPAN)
+                .timestampValue(Duration.ofSeconds(intervalSeconds * numberOfIntervals))
+                .build();
 
-        // put request params into the container
-        reqContainer.appendData(Arrays.asList(reqTimeStart, reqInterval, reqTimeSpan));
+        // build request starting with a container
+        RSCPData reqContainer = RSCPData.builder()
+                .tag(RSCPTag.TAG_DB_REQ_HISTORY_DATA_DAY)
+                .containerValues(Arrays.asList(reqTimeStart, reqInterval, reqTimeSpan))
+                .build();
 
         // build frame and append the request container
-        RSCPFrame reqFrame = new RSCPFrame();
-        reqFrame.appendData(reqContainer);
-        // get as bytes with refreshed timestamp set to now
-        return reqFrame.getAsBytes(true);
-    }
+        RSCPFrame reqFrame = RSCPFrame.builder()
+                .timestamp(Instant.now())
+                .addData(reqContainer)
+                .build();
 
-    public static boolean isDatabaseRequestReplyFrameComplete(byte[] frame) {
-        // this is a heuristic until I know how to check the header properly.
-        // for now: just see if there is a row in the data dump somewhere
-
-        // need a frame object
-        if (frame == null) {
-            return false;
-        }
-
-        // minimum size 32 (header) + 143 (row of data)
-        if (frame.length < 32 + 143) {
-            return false;
-        }
-
-        // must find at least one instance of "20 00 80 06 0e" (indicates next row of data)
-        byte[] pattern = ByteUtils.hexStringToByteArray("200080060e");
-        if (-1 == Collections.indexOfSubList(Arrays.asList(ArrayUtils.toObject(frame)), Arrays.asList(ArrayUtils.toObject(pattern)))) {
-            return false;
-        }
-
-        return true;
+        return reqFrame.getAsByteArray();
     }
 
     public static boolean isAuthenticationRequestReplyFrameComplete(byte[] frame) {
@@ -127,7 +112,7 @@ public class E3DCSampleRequests {
         // return -1 if unable to retrieve authentication level
 
         // we need a valid frame
-        if (false == isAuthenticationRequestReplyFrameComplete(frame))
+        if (!isAuthenticationRequestReplyFrameComplete(frame))
             return -1;
 
         // find the position of the tag
