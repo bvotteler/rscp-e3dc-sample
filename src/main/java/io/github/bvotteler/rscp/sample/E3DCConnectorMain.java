@@ -27,22 +27,22 @@ public class E3DCConnectorMain {
 
         Socket socket = null;
         try {
-            logger.debug("Constructing AES256 encryption/decryption helper...");
+            logger.info("Constructing AES256 encryption/decryption helper...");
             AES256Helper aesHelper = BouncyAES256Helper.createBouncyAES256Helper(aesPwd);
 
-            logger.debug("Open connection to server {}:{} ...", address, port);
+            logger.info("Open connection to server {}:{} ...", address, port);
             socket = E3DCConnector.openConnection(address, port);
             // appease lamba's insistence on effectively final variables.
             final Socket finalSocket = socket;
 
-            logger.debug("Build authentication frame...");
+            logger.info("Build authentication frame...");
             byte[] authFrame = E3DCSampleRequests.buildAuthenticationMessage(user, pwd);
 
             logger.info("Sending authentication frame to server...");
             E3DCConnector.sendFrameToServer(socket, aesHelper::encrypt, authFrame)
-                    .peek(bytesSent -> logger.debug("Authentication: Sent " + bytesSent + " bytes to server."))
+                    .peek(bytesSent -> logger.info("Authentication: Sent " + bytesSent + " bytes to server."))
                     .flatMap(bytesSent -> E3DCConnector.receiveFrameFromServer(finalSocket, aesHelper::decrypt))
-                    .peek(decBytesReceived -> logger.debug("Authentication: Received " + decBytesReceived.length + " decrypted bytes from server."))
+                    .peek(decBytesReceived -> logger.info("Authentication: Received " + decBytesReceived.length + " decrypted bytes from server."))
                     // don't really care about the content, ignore it
                     .fold(
                             exception -> {
@@ -55,12 +55,12 @@ public class E3DCConnectorMain {
             logger.info("Building request frame....");
             byte[] reqFrame = E3DCSampleRequests.buildSampleRequestFrame(tStart, interval, numOfIntervals);
             RSCPFrame responseFrame = E3DCConnector.sendFrameToServer(socket, aesHelper::encrypt, reqFrame)
-                    .peek(bytesSent -> logger.debug("Request data: Sent " + bytesSent + " bytes to server."))
+                    .peek(bytesSent -> logger.info("Request data: Sent " + bytesSent + " bytes to server."))
                     .flatMap(bytesSent -> E3DCConnector.receiveFrameFromServer(finalSocket, aesHelper::decrypt))
                     .peek(decryptedBytesReceived -> {
                         logger.info("Request data: Received " + (decryptedBytesReceived != null ? decryptedBytesReceived.length : 0) + " decrypted bytes from server.");
                         if (decryptedBytesReceived != null) {
-                            logger.debug("Decrypted frame received: " + ByteUtils.byteArrayToHexString(decryptedBytesReceived));
+                            logger.info("Decrypted frame received: " + ByteUtils.byteArrayToHexString(decryptedBytesReceived));
                         }
                     })
                     .map(decryptedBytesReceived -> RSCPFrame.builder().buildFromRawBytes(decryptedBytesReceived))

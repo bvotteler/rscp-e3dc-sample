@@ -28,7 +28,7 @@ public class FrameLoggerHelper {
 
         Instant timestamp = frame.getTimestamp();
 
-        logger.debug(String.format(framePattern, isoFormatter.format(timestamp)));
+        logger.info(String.format(framePattern, isoFormatter.format(timestamp)));
 
         List<RSCPData> dataList = frame.getData();
         for (RSCPData data : dataList) {
@@ -54,7 +54,7 @@ public class FrameLoggerHelper {
                 .append(" ")
                 .append(String.format(dataPattern, data.getDataTag().name(), data.getDataType().name(), value));
 
-        logger.debug(sb.toString());
+        logger.info(sb.toString());
 
         if (data.getDataType() == RSCPDataType.CONTAINER) {
             // log data inside
