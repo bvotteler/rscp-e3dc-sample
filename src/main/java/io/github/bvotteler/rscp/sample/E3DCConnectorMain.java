@@ -3,6 +3,8 @@ package io.github.bvotteler.rscp.sample;
 import io.github.bvotteler.rscp.RSCPFrame;
 import io.github.bvotteler.rscp.sample.Utility.AES256Helper;
 import io.github.bvotteler.rscp.sample.Utility.BouncyAES256Helper;
+import io.github.bvotteler.rscp.sample.Utility.FrameLoggerHelper;
+import io.github.bvotteler.rscp.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +57,12 @@ public class E3DCConnectorMain {
             RSCPFrame responseFrame = E3DCConnector.sendFrameToServer(socket, aesHelper::encrypt, reqFrame)
                     .peek(bytesSent -> logger.debug("Request data: Sent " + bytesSent + " bytes to server."))
                     .flatMap(bytesSent -> E3DCConnector.receiveFrameFromServer(finalSocket, aesHelper::decrypt))
-                    .peek(decryptedBytesReceived -> logger.debug("Request data: Received " + decryptedBytesReceived.length + " decrypted bytes from server."))
+                    .peek(decryptedBytesReceived -> {
+                        logger.info("Request data: Received " + (decryptedBytesReceived != null ? decryptedBytesReceived.length : 0) + " decrypted bytes from server.");
+                        if (decryptedBytesReceived != null) {
+                            logger.debug("Decrypted frame received: " + ByteUtils.byteArrayToHexString(decryptedBytesReceived));
+                        }
+                    })
                     .map(decryptedBytesReceived -> RSCPFrame.builder().buildFromRawBytes(decryptedBytesReceived))
                     .fold(
                             ex -> {
@@ -65,8 +72,8 @@ public class E3DCConnectorMain {
                             rscpFrame -> rscpFrame
                     );
 
-            // Do as you wish with the frame...
-            logger.info("Got a frame with {} number of values. (Probably 1 because it will be a container value in this demo).", responseFrame.getData().size());
+            // Do as you wish with the frame... in this example, we'll log it
+            FrameLoggerHelper.logFrame(responseFrame);
 
             logger.info("Closing connection to server...");
             E3DCConnector.silentlyCloseConnection(socket);
