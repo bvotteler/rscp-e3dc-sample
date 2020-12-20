@@ -4,7 +4,7 @@ to authenticate with an E3DC server, and send a request to fetch database histor
 from [E3/DC GmbH](https://www.e3dc.com/). 
 
 It also includes a helper class to encrypt and decrypt frames sent to and from an E3DC server. 
-See [BouncyAES256Helper,java](./src/main/java/io/github/bvotteler/rscp/sample/Utility/BouncyAES256Helper.java) and its usage for more details.
+See [BouncyAES256Helper.java](./src/main/java/io/github/bvotteler/rscp/sample/Utility/BouncyAES256Helper.java) and its usage for more details.
 
 This sample application is available under the [MIT license](./LICENSE).
 
