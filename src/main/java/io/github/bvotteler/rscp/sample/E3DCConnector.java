@@ -113,17 +113,21 @@ public class E3DCConnector {
         }
 
         try {
-            int bytesRead;
             int totalBytesRead = 0;
             DataInputStream dIn = new DataInputStream(socket.getInputStream());
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] data = new byte[4096];
-            while ((bytesRead = dIn.read(data, 0, data.length)) != -1) {
-                logger.debug("Received " + bytesRead + " bytes, append to buffer... ");
+            do {
+                int bytesRead = dIn.read(data, 0 , data.length);
+                logger.info("Received " + bytesRead + " bytes, append to buffer... ");
+                if (bytesRead == -1) {
+                    logger.warn("Socket closed unexpectedly by server.");
+                    break;
+                }
                 buffer.write(data, 0, bytesRead);
-                totalBytesRead += bytesRead;
-            }
-            logger.debug("Finished reading " + totalBytesRead + "bytes.");
+            } while (dIn.available() > 0);
+
+            logger.info("Finished reading " + totalBytesRead + "bytes.");
             buffer.flush();
 
             byte[] decryptedData = decryptFunc.apply(buffer.toByteArray());
