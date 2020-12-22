@@ -15,15 +15,15 @@ public class E3DCConnectorMain {
 
     public static void main(String[] args) {
         // sample connection details, update to play
-        final String address = "192.168.1.42";    // E3DC ip address as string
-        final int port = 5033;                    // default for E3DC
-        final String aesPwd = "aes password";    // password set on E3DC for AES
+        final String address = "192.168.1.42";  // E3DC ip address as string
+        final int port = 5033;                  // default for E3DC
+        final String aesPwd = "aes password";   // password set on E3DC for AES
         final String user = "web user name";    // typically email address
         final String pwd = "web user password"; // used to log into E3DC portal
 
-        final long tStart = 1607731200000L;        // start time in epoch milliseconds (e.g. Sat, 12 Dec 2020 00:00:00 GMT)
-        final long interval = 900;                // 15 minutes in seconds
-        final int numOfIntervals = 1;            // how many data sets
+        final long tStart = 1607731200L;        // start time in epoch second (e.g. Sat, 12 Dec 2020 00:00:00 GMT)
+        final long interval = 900;              // 15 minutes in seconds
+        final int numOfIntervals = 1;           // how many data sets
 
         Socket socket = null;
         try {
