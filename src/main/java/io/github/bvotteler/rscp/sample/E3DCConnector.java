@@ -125,9 +125,10 @@ public class E3DCConnector {
                     break;
                 }
                 buffer.write(data, 0, bytesRead);
+                totalBytesRead += bytesRead;
             } while (dIn.available() > 0);
 
-            logger.info("Finished reading " + totalBytesRead + "bytes.");
+            logger.info("Finished reading " + totalBytesRead + " bytes.");
             buffer.flush();
 
             byte[] decryptedData = decryptFunc.apply(buffer.toByteArray());
