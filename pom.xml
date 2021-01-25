@@ -6,7 +6,7 @@
 
     <groupId>io.github.bvotteler</groupId>
     <artifactId>e3dc-rscp-sample</artifactId>
-    <version>0.9.2</version>
+    <version>0.9.3</version>
 
     <name>e3dc-rscp-sample-project</name>
     <description>A sample authentication and data request loop for E3DC servers.</description>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>io.github.bvotteler</groupId>
             <artifactId>e3dc-rscp</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
